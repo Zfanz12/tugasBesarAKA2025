@@ -18,8 +18,6 @@ def bubble_sort_iteratif(data):
             if data[j][1] > data[j + 1][1]:
                 data[j], data[j + 1] = data[j + 1], data[j]
 
-
-
 def bubble_sort_rekursif(data, n):
     if n <= 1:
         return
@@ -214,4 +212,5 @@ tk.Button(
     bg="#f08080",
     width=35
 ).pack(pady=5)
+
 root.mainloop()
