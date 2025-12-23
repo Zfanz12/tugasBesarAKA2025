@@ -106,8 +106,31 @@ def tampilkan_grafik():
     plt.grid(True)
     plt.show()
 
+def reset_data():
+    konfirmasi = messagebox.askyesno("Konfirmasi Reset", "Apakah Anda yakin ingin mereset data?")
+    if not konfirmasi:
+        return  
+
+    data_barang.clear()
+    hasil_eksekusi["Iteratif"].clear()
+    hasil_eksekusi["Rekursif"].clear()
+
+    for item in tabel.get_children():
+        tabel.delete(item)
+
+
 root = tk.Tk()
 root.title("Manajemen Stok Barang")
+
+root.update_idletasks()
+
+lebar = 600
+tinggi = 500
+
+x = (root.winfo_screenwidth() // 2) - (lebar // 2)
+y = (root.winfo_screenheight() // 2) - (tinggi // 2) - 50 
+
+root.geometry(f"{lebar}x{tinggi}+{x}+{y}")
 
 frame_input = tk.LabelFrame(root, text=" Input Data ", padx=10, pady=10)
 frame_input.pack(padx=10, pady=5, fill="x")
@@ -146,6 +169,6 @@ frame_aksi.pack(pady=10)
 tk.Button(frame_aksi, text="Sort Iteratif", command=sort_iteratif, width=15).grid(row=0, column=0, padx=5)
 tk.Button(frame_aksi, text="Sort Rekursif", command=sort_rekursif, width=15).grid(row=0, column=1, padx=5)
 tk.Button(root, text="Tampilkan Grafik Perbandingan", command=tampilkan_grafik, bg="#add8e6").pack(pady=5, fill="x", padx=10)
-
+tk.Button(root, text="Reset Data", command=reset_data, bg="#f08080").pack(pady=5, fill="x", padx=10)
 
 root.mainloop()
