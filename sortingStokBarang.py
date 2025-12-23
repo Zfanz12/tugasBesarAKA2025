@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 import sys
 import random
 
-# ================== KONFIGURASI ==================
+#config
 sys.setrecursionlimit(2000)
 
 data_barang = []
 hasil_eksekusi = {"Iteratif": {}, "Rekursif": {}}
 
-# ================== ALGORITMA SORT ==================
+#algo bubble sort
 def bubble_sort_iteratif(data):
     n = len(data)
     for i in range(n - 1):
@@ -27,7 +27,7 @@ def bubble_sort_rekursif(data, n):
             data[i], data[i + 1] = data[i + 1], data[i]
     bubble_sort_rekursif(data, n - 1)
 
-# ================== UTILITAS ==================
+#utility
 def numeric(P):
     return P.isdigit() or P == ""
 
@@ -36,7 +36,7 @@ def update_tabel(data):
     for item in data:
         tabel.insert("", "end", values=item)
 
-# ================== AKSI DATA ==================
+#action
 def tambah_data():
     try:
         nama = entry_nama.get()
@@ -59,7 +59,7 @@ def barang_random(jumlah=10):
         data_barang.append((nama, stok))
         tabel.insert("", "end", values=(nama, stok))
 
-# ================== SORTING ==================
+#sorting
 def sort_iteratif():
     if not data_barang:
         return
@@ -85,7 +85,7 @@ def sort_rekursif():
     except RecursionError:
         messagebox.showerror("Error", "Limit rekursi terlampaui!")
 
-# ================== GRAFIK ==================
+#graph
 def tampilkan_grafik():
     plt.figure(figsize=(10, 5))
     for label, points in hasil_eksekusi.items():
@@ -101,7 +101,7 @@ def tampilkan_grafik():
     plt.grid(True)
     plt.show()
 
-# ================== RESET ==================
+#reset button
 def reset_data():
     if not messagebox.askyesno("Konfirmasi", "Reset semua data?"):
         return
@@ -110,7 +110,7 @@ def reset_data():
     hasil_eksekusi["Rekursif"].clear()
     tabel.delete(*tabel.get_children())
 
-# ================== WINDOW ==================
+#window config/setup
 root = tk.Tk()
 root.title("Manajemen Stok Barang")
 
@@ -119,7 +119,7 @@ x = (root.winfo_screenwidth() - LEBAR) // 2
 y = (root.winfo_screenheight() - TINGGI) // 2 - 40
 root.geometry(f"{LEBAR}x{TINGGI}+{x}+{y}")
 
-# ================== INPUT SECTION ==================
+#inputan
 frame_input = tk.LabelFrame(root, text=" Input Data ", padx=10, pady=10)
 frame_input.pack(fill="x", padx=10, pady=5)
 
@@ -142,7 +142,7 @@ tk.Button(frame_center, text="Tambah ke Tabel", width=30, command=tambah_data)\
 tk.Button(frame_center, text="Tambah Data Random", width=30, command=barang_random)\
     .grid(row=3, columnspan=2)
 
-# ================== TABEL ==================
+#tabel setup/config
 frame_tabel = tk.Frame(root)
 frame_tabel.pack(pady=5)
 
@@ -157,7 +157,7 @@ ttk.Scrollbar(frame_tabel, orient="vertical", command=tabel.yview)\
     .pack(side="right", fill="y")
 tabel.configure(yscrollcommand=lambda *args: None)
 
-# ================== AKSI ==================
+#tombol sorting, tampilkan grafik, reset
 frame_aksi = tk.Frame(root)
 frame_aksi.pack(pady=10)
 
