@@ -125,7 +125,7 @@ root.title("Manajemen Stok Barang")
 root.update_idletasks()
 
 lebar = 600
-tinggi = 500
+tinggi = 520
 
 x = (root.winfo_screenwidth() // 2) - (lebar // 2)
 y = (root.winfo_screenheight() // 2) - (tinggi // 2) - 50 
@@ -133,30 +133,57 @@ y = (root.winfo_screenheight() // 2) - (tinggi // 2) - 50
 root.geometry(f"{lebar}x{tinggi}+{x}+{y}")
 
 frame_input = tk.LabelFrame(root, text=" Input Data ", padx=10, pady=10)
+frame_input.pack(padx=10, pady=5, anchor="w", fill="x")
+
+
+
+frame_input = tk.LabelFrame(root, text=" Input Data ", padx=10, pady=10)
 frame_input.pack(padx=10, pady=5, fill="x")
 
-tk.Label(frame_input, text="Nama Barang:").grid(row=0, column=0, sticky="w")
-entry_nama = tk.Entry(frame_input)
-entry_nama.grid(row=0, column=1, padx=5, pady=2)
+frame_input_center = tk.Frame(frame_input)
+frame_input_center.pack(anchor="center")
 
 vcmd = (root.register(numeric), '%P')
 
-tk.Label(frame_input, text="Stok:").grid(row=1, column=0, sticky="w")
-entry_stok = tk.Entry(frame_input, validate="key", validatecommand=vcmd)
+tk.Label(frame_input_center, text="Nama Barang:").grid(row=0, column=0, sticky="w")
+entry_nama = tk.Entry(frame_input_center, width=25)
+entry_nama.grid(row=0, column=1, padx=5, pady=2)
+
+tk.Label(frame_input_center, text="Stok:").grid(row=1, column=0, sticky="w")
+entry_stok = tk.Entry(
+    frame_input_center,
+    width=25,
+    validate="key",
+    validatecommand=vcmd
+)
 entry_stok.grid(row=1, column=1, padx=5, pady=2)
 
-btn_tambah = tk.Button(frame_input, text="Tambah ke Tabel", command=tambah_data, bg="#e1e1e1")
-btn_tambah.grid(row=2, columnspan=2, pady=10, sticky="ew")
-btn_random = tk.Button(frame_input, text="Tambah Data Random", command=barang_random, bg="#e1e1e1")
-btn_random.grid(row=3, columnspan=2, pady=5, sticky="ew")
+btn_tambah = tk.Button(
+    frame_input_center,
+    text="Tambah ke Tabel",
+    width=30,
+    command=tambah_data
+)
+btn_tambah.grid(row=2, columnspan=2, pady=8)
+
+btn_random = tk.Button(
+    frame_input_center,
+    text="Tambah Data Random",
+    width=30,
+    command=barang_random
+)
+btn_random.grid(row=3, columnspan=2, pady=5)
+
+
+
 frame_tabel = tk.Frame(root)
 frame_tabel.pack(padx=10, pady=5)
 
 tabel = ttk.Treeview(frame_tabel, columns=("Nama", "Stok"), show="headings", height=8)
 tabel.heading("Nama", text="Nama Barang")
 tabel.heading("Stok", text="Stok")
-tabel.column("Nama", width=150)
-tabel.column("Stok", width=100)
+tabel.column("Nama", width=250)
+tabel.column("Stok", width=120)
 tabel.pack(side="left")
 
 scrollbar = ttk.Scrollbar(frame_tabel, orient="vertical", command=tabel.yview)
@@ -166,9 +193,25 @@ scrollbar.pack(side="right", fill="y")
 frame_aksi = tk.Frame(root)
 frame_aksi.pack(pady=10)
 
+frame_bawah = tk.Frame(root)
+frame_bawah.pack(pady=10)
+
+
 tk.Button(frame_aksi, text="Sort Iteratif", command=sort_iteratif, width=15).grid(row=0, column=0, padx=5)
 tk.Button(frame_aksi, text="Sort Rekursif", command=sort_rekursif, width=15).grid(row=0, column=1, padx=5)
-tk.Button(root, text="Tampilkan Grafik Perbandingan", command=tampilkan_grafik, bg="#add8e6").pack(pady=5, fill="x", padx=10)
-tk.Button(root, text="Reset Data", command=reset_data, bg="#f08080").pack(pady=5, fill="x", padx=10)
+tk.Button(
+    frame_bawah,
+    text="Tampilkan Grafik Perbandingan",
+    command=tampilkan_grafik,
+    bg="#add8e6",
+    width=35
+).pack(pady=5)
 
+tk.Button(
+    frame_bawah,
+    text="Reset Data",
+    command=reset_data,
+    bg="#f08080",
+    width=35
+).pack(pady=5)
 root.mainloop()
