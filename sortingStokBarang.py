@@ -234,7 +234,7 @@ tabel_stok.configure(yscrollcommand=scrollbar1.set)
 tabel_stok.pack(side="left", fill="both", expand=True)
 scrollbar1.pack(side="right", fill="y")
 
-tk.Label(frame_kanan, text="HISTORY WAKTU EKSEKUSI (Log)", font=("Arial", 10, "bold")).pack(anchor="w")
+tk.Label(frame_kanan, text="HISTORY", font=("Arial", 10, "bold")).pack(anchor="w")
 tabel_hist_frame = tk.Frame(frame_kanan)
 tabel_hist_frame.pack(fill="both", expand=True)
 
