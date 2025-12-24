@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 import sys
 import random
 
-#config
+# config
 sys.setrecursionlimit(2000)
 
 data_barang = []
 hasil_eksekusi = {"Iteratif": {}, "Rekursif": {}}
 
-#algo bubble sort
+# --- ALGORITMA BUBBLE SORT ---
 def bubble_sort_iteratif(data):
     n = len(data)
     for i in range(n - 1):
@@ -27,7 +27,7 @@ def bubble_sort_rekursif(data, n):
             data[i], data[i + 1] = data[i + 1], data[i]
     bubble_sort_rekursif(data, n - 1)
 
-#utility
+# --- UTILITY ---
 def numeric(P):
     return P.isdigit() or P == ""
 
@@ -36,19 +36,19 @@ def update_tabel(data):
     for item in data:
         tabel.insert("", "end", values=item)
 
-#action
+# --- ACTION ---
 def tambah_data():
     try:
         nama = entry_nama.get()
-        stok = int(entry_stok.get())
-        if not nama:
+        stok_str = entry_stok.get()
+        if not nama or not stok_str:
             raise ValueError
-
+        
+        stok = int(stok_str)
         data_barang.append((nama, stok))
         tabel.insert("", "end", values=(nama, stok))
         entry_nama.delete(0, tk.END)
         entry_stok.delete(0, tk.END)
-
     except ValueError:
         messagebox.showerror("Error", "Isi Nama dan Stok (angka) dengan benar!")
 
@@ -59,33 +59,27 @@ def barang_random(jumlah=10):
         data_barang.append((nama, stok))
         tabel.insert("", "end", values=(nama, stok))
 
-#sorting
 def sort_iteratif():
-    if not data_barang:
-        return
+    if not data_barang: return
     data = list(data_barang)
     start = time.perf_counter_ns()
     bubble_sort_iteratif(data)
     waktu = time.perf_counter_ns() - start
-
     update_tabel(data)
     hasil_eksekusi["Iteratif"][len(data)] = waktu
 
 def sort_rekursif():
-    if not data_barang:
-        return
+    if not data_barang: return
     data = list(data_barang)
     try:
         start = time.perf_counter_ns()
         bubble_sort_rekursif(data, len(data))
         waktu = time.perf_counter_ns() - start
-
         update_tabel(data)
         hasil_eksekusi["Rekursif"][len(data)] = waktu
     except RecursionError:
         messagebox.showerror("Error", "Limit rekursi terlampaui!")
 
-#graph
 def tampilkan_grafik():
     plt.figure(figsize=(10, 5))
     for label, points in hasil_eksekusi.items():
@@ -93,7 +87,6 @@ def tampilkan_grafik():
             n = sorted(points.keys())
             waktu = [points[i] for i in n]
             plt.plot(n, waktu, marker='o', label=label)
-
     plt.xlabel("Ukuran Input (n)")
     plt.ylabel("Waktu Eksekusi (ns)")
     plt.title("Perbandingan Bubble Sort")
@@ -101,7 +94,6 @@ def tampilkan_grafik():
     plt.grid(True)
     plt.show()
 
-#reset button
 def reset_data():
     if not messagebox.askyesno("Konfirmasi", "Reset semua data?"):
         return
@@ -110,69 +102,74 @@ def reset_data():
     hasil_eksekusi["Rekursif"].clear()
     tabel.delete(*tabel.get_children())
 
-#window config/setup
+# --- WINDOW SETUP ---
 root = tk.Tk()
-root.title("Manajemen Stok Barang")
+root.title("Manajemen Stok Barang - Analisis Algoritma")
 
-LEBAR, TINGGI = 600, 520
+# Ukuran window lebih lebar untuk mengakomodasi tabel di kanan
+LEBAR, TINGGI = 900, 500 
 x = (root.winfo_screenwidth() - LEBAR) // 2
-y = (root.winfo_screenheight() - TINGGI) // 2 - 40
+y = (root.winfo_screenheight() - TINGGI) // 2
 root.geometry(f"{LEBAR}x{TINGGI}+{x}+{y}")
 
-#inputan
-frame_input = tk.LabelFrame(root, text=" Input Data ", padx=10, pady=10)
-frame_input.pack(fill="x", padx=10, pady=5)
+# --- CONTAINER UTAMA (SPLIT KIRI & KANAN) ---
+frame_kiri = tk.Frame(root, width=350, padx=10, pady=10)
+frame_kiri.pack(side="left", fill="y")
 
-frame_center = tk.Frame(frame_input)
-frame_center.pack(anchor="center")
+frame_kanan = tk.Frame(root, padx=10, pady=10)
+frame_kanan.pack(side="right", fill="both", expand=True)
+
+# --- ISI FRAME KIRI (KONTROL) ---
+# Bagian Input
+frame_input = tk.LabelFrame(frame_kiri, text=" Input Data ", padx=10, pady=10)
+frame_input.pack(fill="x", pady=5)
 
 vcmd = (root.register(numeric), "%P")
 
-tk.Label(frame_center, text="Nama Barang").grid(row=0, column=0, sticky="w")
-entry_nama = tk.Entry(frame_center, width=25)
-entry_nama.grid(row=0, column=1, padx=5)
+tk.Label(frame_input, text="Nama Barang").grid(row=0, column=0, sticky="w", pady=2)
+entry_nama = tk.Entry(frame_input, width=25)
+entry_nama.grid(row=0, column=1, padx=5, pady=2)
 
-tk.Label(frame_center, text="Stok").grid(row=1, column=0, sticky="w")
-entry_stok = tk.Entry(frame_center, width=25, validate="key", validatecommand=vcmd)
-entry_stok.grid(row=1, column=1, padx=5)
+tk.Label(frame_input, text="Stok").grid(row=1, column=0, sticky="w", pady=2)
+entry_stok = tk.Entry(frame_input, width=25, validate="key", validatecommand=vcmd)
+entry_stok.grid(row=1, column=1, padx=5, pady=2)
 
-tk.Button(frame_center, text="Tambah ke Tabel", width=30, command=tambah_data)\
-    .grid(row=2, columnspan=2, pady=8)
-
-tk.Button(frame_center, text="Tambah Data Random", width=30, command=barang_random)\
+tk.Button(frame_input, text="Tambah ke Tabel", width=25, command=tambah_data, bg="#e1e1e1")\
+    .grid(row=2, columnspan=2, pady=10)
+tk.Button(frame_input, text="Tambah 10 Data Random", width=25, command=barang_random)\
     .grid(row=3, columnspan=2)
 
-#tabel setup/config
-frame_tabel = tk.Frame(root)
-frame_tabel.pack(pady=5)
+# Bagian Tombol Sorting
+frame_aksi = tk.LabelFrame(frame_kiri, text=" Eksekusi Algoritma ", padx=10, pady=10)
+frame_aksi.pack(fill="x", pady=10)
 
-tabel = ttk.Treeview(frame_tabel, columns=("Nama", "Stok"), show="headings", height=8)
+tk.Button(frame_aksi, text="Sort Iteratif", width=11, command=sort_iteratif, bg="#d4edda")\
+    .grid(row=0, column=0, padx=5, pady=5)
+tk.Button(frame_aksi, text="Sort Rekursif", width=11, command=sort_rekursif, bg="#d1ecf1")\
+    .grid(row=0, column=1, padx=5, pady=5)
+
+# Bagian Tombol Bawah
+tk.Button(frame_kiri, text="Tampilkan Grafik Perbandingan", width=30, height=2,
+          bg="#add8e6", command=tampilkan_grafik).pack(pady=5)
+tk.Button(frame_kiri, text="Reset Semua Data", width=30,
+          bg="#f08080", command=reset_data).pack(pady=5)
+
+# --- ISI FRAME KANAN (TABEL BESAR) ---
+tk.Label(frame_kanan, text="Daftar Stok Barang", font=("Arial", 10, "bold")).pack(anchor="w", pady=2)
+
+tabel_container = tk.Frame(frame_kanan)
+tabel_container.pack(fill="both", expand=True)
+
+tabel = ttk.Treeview(tabel_container, columns=("Nama", "Stok"), show="headings")
 tabel.heading("Nama", text="Nama Barang")
-tabel.heading("Stok", text="Stok")
-tabel.column("Nama", width=250)
-tabel.column("Stok", width=120)
-tabel.pack(side="left")
+tabel.heading("Stok", text="Jumlah Stok")
+tabel.column("Nama", anchor="center")
+tabel.column("Stok", anchor="center", width=100)
 
-ttk.Scrollbar(frame_tabel, orient="vertical", command=tabel.yview)\
-    .pack(side="right", fill="y")
-tabel.configure(yscrollcommand=lambda *args: None)
+scrollbar = ttk.Scrollbar(tabel_container, orient="vertical", command=tabel.yview)
+tabel.configure(yscrollcommand=scrollbar.set)
 
-#tombol sorting, tampilkan grafik, reset
-frame_aksi = tk.Frame(root)
-frame_aksi.pack(pady=10)
-
-tk.Button(frame_aksi, text="Sort Iteratif", width=15, command=sort_iteratif)\
-    .grid(row=0, column=0, padx=5)
-tk.Button(frame_aksi, text="Sort Rekursif", width=15, command=sort_rekursif)\
-    .grid(row=0, column=1, padx=5)
-
-frame_bawah = tk.Frame(root)
-frame_bawah.pack(pady=10)
-
-tk.Button(frame_bawah, text="Tampilkan Grafik Perbandingan", width=35,
-          bg="#add8e6", command=tampilkan_grafik).pack(pady=4)
-
-tk.Button(frame_bawah, text="Reset Data", width=35,
-          bg="#f08080", command=reset_data).pack()
+tabel.pack(side="left", fill="both", expand=True)
+scrollbar.pack(side="right", fill="y")
 
 root.mainloop()
