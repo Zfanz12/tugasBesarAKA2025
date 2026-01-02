@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import time
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider 
+from matplotlib.widgets import Slider, RadioButtons
 import sys
 import random
 
@@ -139,24 +141,132 @@ def run_comparison():
     messagebox.showinfo("Selesai", f"Perbandingan selesai untuk n={n}")
 
 def tampilkan_grafik():
+    # 1. Cek Data
     if not hasil_eksekusi["Iteratif"] and not hasil_eksekusi["Rekursif"]:
         messagebox.showwarning("Peringatan", "Belum ada data analisis!")
         return
         
-    plt.figure(figsize=(10, 6))
-    for label, points in hasil_eksekusi.items():
-        if points:
-            n_vals = sorted(points.keys())
-            waktu_vals = [points[i] for i in n_vals]
-            plt.plot(n_vals, waktu_vals, marker='o', label=f"Bubble Sort {label}")
+    # --- SETUP LAYOUT ---
+    # sharex=True: Zoom X di atas akan ngefek ke bawah juga
+    fig, (ax_main, ax_diff) = plt.subplots(2, 1, figsize=(12, 8), height_ratios=[2, 1], sharex=True)
+    
+    # Atur margin supaya Slider & Radio Button muat
+    plt.subplots_adjust(bottom=0.25, left=0.15, right=0.95, top=0.95, hspace=0.15)
 
-    plt.xlabel("Ukuran Input (n)")
-    plt.ylabel("Waktu (ns)")
-    plt.title("Perbandingan Kecepatan Bubble Sort")
-    plt.legend()
-    plt.grid(True)
+    # --- AUTO MAXIMIZE WINDOW (Full Screen) ---
+    manager = plt.get_current_fig_manager()
+    try:
+        # Perintah ini bekerja di Windows (Tkinter backend)
+        manager.window.state('zoomed')
+    except:
+        try:
+            # Fallback untuk OS lain (Linux/Mac)
+            manager.full_screen_toggle()
+        except:
+            pass # Kalau gagal, biarkan ukuran default
+
+    all_times = []
+    all_n = []
+    data_points = {"Iteratif": {}, "Rekursif": {}}
+
+    # --- 1. PLOT GRAFIK UTAMA (ATAS) ---
+    if hasil_eksekusi["Iteratif"]:
+        n_vals = sorted(hasil_eksekusi["Iteratif"].keys())
+        waktu_vals = [hasil_eksekusi["Iteratif"][i] for i in n_vals]
+        all_times.extend(waktu_vals)
+        all_n.extend(n_vals)
+        for n, t in zip(n_vals, waktu_vals): data_points["Iteratif"][n] = t
+        ax_main.plot(n_vals, waktu_vals, marker='o', linestyle='-', color='blue', label='Iteratif', alpha=0.8)
+
+    if hasil_eksekusi["Rekursif"]:
+        n_vals = sorted(hasil_eksekusi["Rekursif"].keys())
+        waktu_vals = [hasil_eksekusi["Rekursif"][i] for i in n_vals]
+        all_times.extend(waktu_vals)
+        all_n.extend(n_vals)
+        for n, t in zip(n_vals, waktu_vals): data_points["Rekursif"][n] = t
+        ax_main.plot(n_vals, waktu_vals, marker='x', linestyle='--', color='red', label='Rekursif', alpha=0.8)
+
+    ax_main.set_ylabel("Waktu (ns)")
+    ax_main.set_title("Perbandingan Waktu Eksekusi (Atas) & Overhead Gap (Bawah)", fontweight='bold')
+    ax_main.legend(loc='upper left')
+    ax_main.grid(True, which="both", ls=":", alpha=0.6)
+
+    # --- 2. PLOT SELISIH (BAWAH) ---
+    common_n = sorted(list(set(data_points["Iteratif"].keys()) & set(data_points["Rekursif"].keys())))
+    if common_n:
+        # Hitung Gap
+        gaps = [data_points["Rekursif"][n] - data_points["Iteratif"][n] for n in common_n]
+        
+        ax_diff.plot(common_n, gaps, color='purple', linestyle='-', marker='.', linewidth=1)
+        ax_diff.fill_between(common_n, gaps, 0, color='purple', alpha=0.3)
+        ax_diff.axhline(0, color='black', linewidth=1) # Garis nol
+        
+        # Anotasi Max Gap
+        max_gap = max(gaps)
+        max_n = common_n[gaps.index(max_gap)]
+        ax_diff.annotate(f'Max Gap:\n{max_gap} ns', 
+                         xy=(max_n, max_gap), 
+                         xytext=(max_n, max_gap * 1.3),
+                         arrowprops=dict(facecolor='black', arrowstyle='->'),
+                         fontsize=9, color='purple', fontweight='bold')
+
+    ax_diff.set_ylabel("Selisih (ns)")
+    ax_diff.set_xlabel("Ukuran Input (n)")
+    ax_diff.grid(True, alpha=0.5)
+
+    # --- 3. SLIDER CONFIG (X & Y) ---
+    if not all_times or not all_n: return
+
+    max_n_val = max(all_n)
+    max_time_val = max(all_times) * 1.1
+
+    # Slider Y (Mengontrol Grafik Atas)
+    ax_slider_y = plt.axes([0.20, 0.12, 0.60, 0.03], facecolor='lightgoldenrodyellow')
+    slider_y = Slider(ax_slider_y, 'Zoom Y (Main) ', 0, max_time_val, valinit=max_time_val)
+
+    # Slider X (Mengontrol KEDUA Grafik)
+    ax_slider_x = plt.axes([0.20, 0.07, 0.60, 0.03], facecolor='lightblue')
+    slider_x = Slider(ax_slider_x, 'Zoom X (n) ', min(all_n), max_n_val, valinit=max_n_val, valstep=1)
+
+    def update_sliders(val):
+        # Update Y Limit (Hanya grafik atas)
+        ax_main.set_ylim(ymin=0, ymax=slider_y.val)
+        
+        # Update X Limit (Otomatis kedua grafik karena sharex=True)
+        ax_main.set_xlim(xmin=min(all_n)*0.9, xmax=slider_x.val)
+        
+        # Grafik bawah (Diff) kita autoscale Y-nya biar gap selalu terlihat jelas
+        ax_diff.relim()
+        ax_diff.autoscale_view()
+        
+        fig.canvas.draw_idle()
+
+    slider_y.on_changed(update_sliders)
+    slider_x.on_changed(update_sliders)
+
+    # --- 4. RADIO BUTTON (LINEAR/LOG) ---
+    ax_radio = plt.axes([0.02, 0.4, 0.10, 0.15], facecolor='#f0f0f0')
+    radio = RadioButtons(ax_radio, ('Linear', 'Logarithmic'))
+
+    def change_scale(label):
+        if label == 'Linear':
+            ax_main.set_yscale('linear')
+            ax_main.set_ylim(ymin=0, ymax=slider_y.val)
+        else:
+            ax_main.set_yscale('log')
+            ax_main.autoscale(enable=True, axis='y')
+            
+        fig.canvas.draw_idle()
+
+    radio.on_clicked(change_scale)
+
+    # Simpan referensi widget
+    fig.slider_y = slider_y
+    fig.slider_x = slider_x
+    fig.radio = radio
+
     plt.show()
-
+    
 def reset_data():
     global attempt_counter
     if not messagebox.askyesno("Konfirmasi", "Reset semua data?"):
