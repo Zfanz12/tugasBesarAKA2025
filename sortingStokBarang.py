@@ -22,6 +22,8 @@ def bubble_sort_iteratif(data):
             if data[j][1] > data[j + 1][1]:
                 data[j], data[j + 1] = data[j + 1], data[j]
 
+# rekursif bubble sort
+
 def bubble_sort_rekursif(data, n):
     if n <= 1:
         return
